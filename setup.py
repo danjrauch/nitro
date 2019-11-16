@@ -7,7 +7,10 @@ setup(
     install_requires=[
         'Click',
         'colorama',
-        'mpi4py'
+        'mpi4py',
+        'pymp-pypi',
+        'numpy',
+        'ttictoc'
     ],
     entry_points='''
         [console_scripts]

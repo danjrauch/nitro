@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <unistd.h>
-#include <omp.h>
+// #include <omp.h>
 
 int validate(const char ** files, int files_size, char ** errors, int errors_size)
 {
