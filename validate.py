@@ -2,6 +2,8 @@ import pymp
 import itertools
 import csv
 import os
+import random
+import string
 from collections import defaultdict
 
 def constraint_keys(files):
@@ -15,8 +17,8 @@ def constraint_keys(files):
             new_rows = []
             for row_num, row in enumerate(reader):
                 if row['IID'] in keys:
-                    row['IID'] = str(row_num + 100000)
-                keys[row['IID']].append(row_num)
+                    row['IID'] = row_num # "".join(random.choices(string.ascii_letters, k=3)) + str(random.randint(1,100000))
+                keys[row['IID']].append(row_num) # "".join(random.choices(string.ascii_letters, k=3)) + str(row_num))
                 new_rows.append(row)
 
             new_keys = {}
@@ -32,8 +34,8 @@ def constraint_keys(files):
 
             writer.writeheader()
             writer.writerows(new_rows)
-        
-        os.remove('new'+file)
+
+        # os.remove('new'+file)
 
     # 1to1 THREAD TO FILE
     # ex_dict = pymp.shared.dict()
