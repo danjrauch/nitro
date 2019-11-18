@@ -1,9 +1,8 @@
 import click
 import subprocess
 import os
-import glob
 from ttictoc import TicToc
-from validate import *
+from constraints import *
 
 @click.group(invoke_without_command=True)
 @click.pass_context
@@ -18,16 +17,6 @@ def cli(ctx):
 def validate(dir):
     click.secho('I am about to invoke validate on {0}'.format(dir), fg = 'bright_red')
 
-    os.chdir(dir)
-    files = glob.glob('*.{}'.format('csv'))
-
-    with TicToc('Constraint Keys'):
-        result = constraint_keys(files)
-
-    # print(result)
-    # for res in errors:
-    #     print(res.decode('utf-8'))
-
-    # with click.progressbar([i for i in range(100000)]) as bar:
-    #     for i in bar:
-    #         i + 5
+    with TicToc('Satisfied Constraints'):
+        subprocess.call(['mpiexec', '-n', '4', 'python', 'constraints.py', dir])
+        # -m mpi4py
