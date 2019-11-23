@@ -34,6 +34,10 @@ def constraints(file):
             if row['IID__c'] in keys:
                 row['IID__c'] = row_num
             keys.add(row['IID__c'])
+            if 'ActivityDate' in row:
+                row['ActivityDate'] = convert_date(row['ActivityDate'])
+            if 'StartDate' in row:
+                row['StartDate'] = convert_date(row['StartDate'])
             if 'Birthdate' in row:
                 row['Birthdate'] = convert_date(row['Birthdate'])
             if 'Closedate' in row:
@@ -77,7 +81,3 @@ if __name__ == '__main__':
     for file in files:
         with TicToc('Rank {0}'.format(rank)):
             constraints(file)
-
-    # for file in files:
-    #     os.remove(file)
-    #     shutil.copyfile(os.path.join('archive', file), os.path.join('.', file))

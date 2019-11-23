@@ -33,6 +33,7 @@ if __name__ == '__main__':
     names = comm.scatter(names, root=0)
 
     for name in names:
+        # TODO give the contracts an accountid
         subprocess.call(['sfdx', 'force:data:bulk:upsert', '-u', 'nitro_scratch', '-s', name, '-f', name + '.csv', '-i', 'IID__c', '-w', '2'])
         # subprocess.call(['mvmt', 'bulk', '-a', 'nitro_scratch', '-o', name, '-p', name + '.csv', '--insert'])
 
