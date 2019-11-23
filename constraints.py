@@ -6,11 +6,23 @@ import random
 import sys
 import string
 import glob
+import shutil
 from ttictoc import TicToc
 from collections import defaultdict
 from mpi4py import MPI
 
-def constraint_keys(file):
+def convert_date(slash_date):
+    year = slash_date.split('/')[2]
+    month = slash_date.split('/')[0]
+    day = slash_date.split('/')[1]
+    if int(month) < 10 and len(month) < 2:
+        month = '0' + month
+    if int(day) < 10 and len(day) < 2:
+        day = '0' + day
+    return year+'-'+month+'-'+day
+
+
+def constraints(file):
     # SEQUENTIAL
     keys = set()
     fieldnames = []
@@ -19,95 +31,28 @@ def constraint_keys(file):
         fieldnames = reader.fieldnames
         new_rows = []
         for row_num, row in enumerate(reader):
-            if row['IID'] in keys:
-                row['IID'] = row_num # "".join(random.choices(string.ascii_letters, k=3)) + str(random.randint(1,100000))
-            keys.add(row['IID']) # "".join(random.choices(string.ascii_letters, k=3)) + str(row_num))
+            if row['IID__c'] in keys:
+                row['IID__c'] = row_num
+            keys.add(row['IID__c'])
+            if 'Birthdate' in row:
+                row['Birthdate'] = convert_date(row['Birthdate'])
+            if 'Closedate' in row:
+                row['Closedate'] = convert_date(row['Closedate'])
             new_rows.append(row)
 
         new_keys = set()
         for row in new_rows:
-            if row['IID'] in new_keys:
-                print('Uh Oh... ' + str(row['IID']))
-            new_keys.add(row['IID'])
+            if row['IID__c'] in new_keys:
+                print('Uh Oh... ' + str(row['IID__c']))
+            new_keys.add(row['IID__c'])
 
-    with open('new'+file, 'w', newline='') as f:
+    with open(file, 'w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
-
         writer.writeheader()
         writer.writerows(new_rows)
 
-    os.remove('new'+file)
-
-    # 1to1 THREAD TO FILE
-    # ex_dict = pymp.shared.dict()
-    # with pymp.Parallel(2) as p:
-    #     if p.thread_num == 0:
-    #         keys = {}
-    #         with open(files[0], 'r' ) as f:
-    #             reader = csv.DictReader(f)
-    #             for row_num, row in enumerate(reader):
-    #                 if row['IID'] in keys:
-    #                     keys[row['IID']].append(int(row_num))
-    #                 else:
-    #                     keys[row['IID']] = [ int(row_num) ]
-    #         ex_dict[p.thread_num] = keys
-    #     else:
-    #         keys = {}
-    #         with open(files[1], 'r' ) as f:
-    #             reader = csv.DictReader(f)
-    #             for row_num, row in enumerate(reader):
-    #                 if row['IID'] in keys:
-    #                     keys[row['IID']].append(int(row_num))
-    #                 else:
-    #                     keys[row['IID']] = [ int(row_num) ]
-    #         ex_dict[p.thread_num] = keys
-    # print(ex_dict[1][3])
-
-
-    # Nto1 THREAD TO FILE
-    # fieldnames = []
-    # rows = []
-    # with open(files[0], 'r') as f:
-    #     reader = csv.DictReader(f)
-    #     fieldnames = reader.fieldnames
-    #     # rows =
-    #     rows = pymp.shared.list([row for row in reader])
-    #     N = len(rows)
-    #     ex_dict = pymp.shared.dict()
-    #     with pymp.Parallel(4) as p:
-    #         start = p.thread_num * int(N/4)
-    #         end = (p.thread_num + 1) * int(N/4)
-    #         keys = defaultdict(int)
-    #         my_rows = []
-    #         with p.lock:
-    #             my_rows = rows[start:end]
-    #         row_num = start
-    #         for row in my_rows:
-    #             if row['IID'] in keys:
-    #                 keys[row_num] = row_num # generate a new unique key here
-    #             else:
-    #                 keys[row['IID']] = row_num
-    #             row_num += 1
-    #         with p.lock:
-    #             for key, val in keys.items():
-    #                 if key in ex_dict:
-    #                     n_key = random.randint(N+1, N+N)
-    #                     while n_key in ex_dict:
-    #                         n_key = random.randint(N+1, N+5*N)
-    #                     rows[val]['IID'] = n_key
-    #                     ex_dict[rows[val]['IID']] = val
-    #                 else:
-    #                     ex_dict[key] = val
-
-    # with open('new'+files[0], 'w', newline='') as f:
-    #     writer = csv.DictWriter(f, fieldnames=fieldnames)
-
-    #     writer.writeheader()
-    #     writer.writerows(rows)
-
-    # os.remove('new'+files[0])
+    # os.remove('new'+file)
     return 0
-
 
 if __name__ == '__main__':
     comm = MPI.COMM_WORLD
@@ -125,15 +70,14 @@ if __name__ == '__main__':
             scatter_data[i % size].append(file)
         files = scatter_data
     else:
-        files = None
-
-    # if rank == 0:
-    #     for fl in files:
-    #         for file in fl:
-    #             constraint_keys(file)
+        files = []
 
     files = comm.scatter(files, root=0)
 
     for file in files:
-        with TicToc('Constraint Keys for Rank {0}'.format(rank)):
-            result = constraint_keys(file)
+        with TicToc('Rank {0}'.format(rank)):
+            constraints(file)
+
+    # for file in files:
+    #     os.remove(file)
+    #     shutil.copyfile(os.path.join('archive', file), os.path.join('.', file))

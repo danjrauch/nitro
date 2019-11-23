@@ -10,7 +10,8 @@ setup(
         'mpi4py',
         'pymp-pypi',
         'numpy',
-        'ttictoc'
+        'ttictoc',
+        'simple_salesforce'
     ],
     entry_points='''
         [console_scripts]

@@ -1,0 +1,69 @@
+{
+  "Task": {
+    "children": [
+      {
+        "name": "AccountId",
+        "object": "Account"
+      },
+      {
+        "name": "WhatId",
+        "object": "Opportunity"
+      },
+      {
+        "name": "WhoId",
+        "object": "Contact"
+      }
+    ]
+  },
+
+  "Account": {
+    "children": []
+  },
+
+  "Contact": {
+    "children": [
+      {
+        "name": "AccountId",
+        "object": "Account"
+      }
+    ]
+  },
+
+  "Lead": {
+    "children": []
+  },
+
+  "Campaign": {
+    "children": []
+  },
+
+  "Contract": {
+    "children": [
+      {
+        "name": "AccountId",
+        "object": "Account"
+      }
+    ]
+  },
+
+  "Opportunity": {
+    "children": [
+      {
+        "name": "AccountId",
+        "object": "Account"
+      },
+      {
+        "name": "ContactId",
+        "object": "Contact"
+      },
+      {
+        "name": "ContractId",
+        "object": "Account"
+      },
+      {
+        "name": "CampaignId",
+        "object": "Campaign"
+      }
+    ]
+  }
+}
